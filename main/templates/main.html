@@ -1,6 +1,36 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Navbar</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'main:logout' %}">Logout</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Profile
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">Raquel Nayyara</a></li>
+              <li><a class="dropdown-item" href="#">PBP F</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" aria-disabled="true">Disabled</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
     <h1>Shopping List Page</h1>
 
     <h5>Name:</h5>
@@ -8,8 +38,18 @@
 
     <h5>Class:</h5>
     <p>{{class}}</p>
-    ...
 <table>
+    <head>
+        <style>
+        table, th, td {
+          border: 1px solid rgb(250, 250, 250);
+          border-collapse: collapse;
+        }
+        th, td {
+          background-color: #bc8bb2;
+        }
+        </style>
+        </head>
     <tr>
         <th>Name</th>
         <th>Price</th>
@@ -25,6 +65,18 @@
             <td>{{product.price}}</td>
             <td>{{product.description}}</td>
             <td>{{product.date_added}}</td>
+            <td>
+                <a href="{% url 'main:edit_product' product.pk %}">
+                    <button>
+                        Edit
+                    </button>
+                 </a>
+                <a href="{% url 'main:delete_product' product.pk %}">
+                    <button>
+                            Delete
+                    </button>
+                </a>
+            </td>
         </tr>
     {% endfor %}
 </table>
