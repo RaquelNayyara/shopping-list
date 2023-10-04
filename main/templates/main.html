@@ -3,34 +3,34 @@
 {% block content %}
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">Navbar</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <a class="navbar-brand" href="#">Navbar</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
+        <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="#">Home</a>
-          </li>
-          <li class="nav-item">
+        </li>
+        <li class="nav-item">
             <a class="nav-link" href="{% url 'main:logout' %}">Logout</a>
-          </li>
-          <li class="nav-item dropdown">
+        </li>
+        <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Profile
+            Profile
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">{{name}}</a></li>
-              <li><a class="dropdown-item" href="#">PBP F</a></li>
+            <li><a class="dropdown-item" href="#">{{name}}</a></li>
+            <li><a class="dropdown-item" href="#">PBP F</a></li>
             </ul>
-          </li>
-          <li class="nav-item">
+        </li>
+        <li class="nav-item">
             <a class="nav-link disabled" aria-disabled="true">Disabled</a>
-          </li>
+        </li>
         </ul>
-      </div>
     </div>
-  </nav>
+    </div>
+</nav>
     <h1>Shopping List Page</h1>
 
     <h5>Name:</h5>
@@ -38,48 +38,7 @@
 
     <h5>Class:</h5>
     <p>{{class}}</p>
-<table>
-    <head>
-        <style>
-        table, th, td {
-          border: 8px solid rgb(250, 250, 250);
-          border-collapse: collapse;
-        }
-        th, td {
-          background-color: #bc8bb2;
-        }
-        </style>
-        </head>
-    <tr>
-        <th>Name</th>
-        <th>Price</th>
-        <th>Description</th>
-        <th>Date Added</th>
-    </tr>
-
-    {% comment %} Berikut cara memperlihatkan data produk di bawah baris ini {% endcomment %}
-
-    {% for product in products %}
-        <tr>
-            <td>{{product.name}}</td>
-            <td>{{product.price}}</td>
-            <td>{{product.description}}</td>
-            <td>{{product.date_added}}</td>
-            <td>
-                <a href="{% url 'main:edit_product' product.pk %}">
-                    <button>
-                        Edit
-                    </button>
-                 </a>
-                <a href="{% url 'main:delete_product' product.pk %}">
-                    <button>
-                            Delete
-                    </button>
-                </a>
-            </td>
-        </tr>
-    {% endfor %}
-</table>
+<table id="product_table"></table>
 
 <br />
 
@@ -95,6 +54,90 @@
     </button>
 </a>
 
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Add New Product</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="form" onsubmit="return false;">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="col-form-label">Name:</label>
+                        <input type="text" class="form-control" id="name" name="name"></input>
+                    </div>
+                    <div class="mb-3">
+                        <label for="price" class="col-form-label">Price:</label>
+                        <input type="number" class="form-control" id="price" name="price"></input>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="col-form-label">Description:</label>
+                        <textarea class="form-control" id="description" name="description"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="button_add" data-bs-dismiss="modal">Add Product</button>
+            </div>
+        </div>
+    </div>
+</div>
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Add Product by AJAX</button>
 <h5>Sesi terakhir login: {{ last_login }}</h5>
 
+<script>
+    async function getProducts() {
+        return fetch("{% url 'main:get_product_json' %}").then((res) => res.json())
+    }
+    async function refreshProducts() {
+        document.getElementById("product_table").innerHTML = ""
+        const products = await getProducts()
+        let htmlString = `<tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Description</th>
+            <th>Date Added</th>
+            <th>Edit</th>
+            <th>Delete</th>
+            </tr>`
+            products.forEach((item) => {
+                htmlString += `
+                <tr>
+                    <td>${item.fields.name}</td>
+                    <td>${item.fields.price}</td>
+                    <td>${item.fields.description}</td>
+                    <td>${item.fields.date_added}</td>
+                    <td>
+                        <button class="btn btn-primary" onclick="editProduct(${item.pk})">Edit</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" onclick="deleteProduct(${item.pk})">Delete</button>
+                    </td>
+                </tr>`
+            });
+        
+        document.getElementById("product_table").innerHTML = htmlString
+    }
+    refreshProducts()
+    function addProduct() {
+        fetch("{% url 'main:add_product_ajax' %}", {
+            method: "POST",
+            body: new FormData(document.querySelector('#form'))
+        }).then(refreshProducts)
+
+        document.getElementById("form").reset()
+        return false
+    }
+    function editProduct(pk) {
+    window.location.href = `/edit-product/${pk}`;
+    }
+
+    function deleteProduct(pk) {
+    window.location.href = `/delete/${pk}`;
+    }
+
+</script>
 {% endblock content %}
